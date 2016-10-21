@@ -26,13 +26,14 @@ module.exports = function (config, cb) {
 
       var ghRepo = parseSlug(pkg.repository.url)
       var release = {
-        owner: ghRepo[0],
+        user: ghRepo[0],
         repo: ghRepo[1],
         name: 'v' + pkg.version,
         tag_name: 'v' + pkg.version,
         target_commitish: hash,
         draft: !!options.debug,
-        body: log
+        body: log,
+        prerelease: (pkg.publishConfig || {}).tag === "next"
       }
 
       if (options.debug && !options.githubToken) {
@@ -44,7 +45,7 @@ module.exports = function (config, cb) {
         token: options.githubToken
       })
 
-      github.releases.createRelease(release, function (err) {
+      github.repos.createRelease(release, function (err) {
         if (err) return cb(err)
 
         cb(null, true, release)

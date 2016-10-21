@@ -107,18 +107,14 @@ npmconf.load({}, function (err, conf) {
         wroteNpmRc = true
       }
 
-      conf.save('project', function (err) {
-        if (err) return log.error('pre', 'Failed to save npm config.', err)
+      conf.save('project', function (error) {
+        if (error) return log.error('pre', 'Failed to save npm config.', error)
 
         if (wroteNpmRc) log.verbose('pre', 'Wrote authToken to .npmrc.')
 
-        require('../src/pre')(config, function (err, release) {
-          if (err) {
-            log.error('pre', 'Failed to determine new version.')
-
-            var args = ['pre', (err.code ? err.code + ' ' : '') + err.message]
-            if (err.stack) args.push(err.stack)
-            log.error.apply(log, args)
+        require('../src/pre')(config, function (error, release) {
+          if (error) {
+            log.error('pre', 'Failed to determine new version: ' + (error.stack || error))
             process.exit(1)
           }
 
