@@ -1,4 +1,3 @@
-var _ = require('lodash')
 var auto = require('run-auto')
 var semver = require('semver')
 
@@ -17,7 +16,7 @@ module.exports = function (config, cb) {
       cb)
     }],
     type: ['commits', 'lastRelease', function (results, cb) {
-      getType(_.assign({
+      getType(Object.assign({
         commits: results.commits,
         lastRelease: results.lastRelease
       }, config),
@@ -33,7 +32,7 @@ module.exports = function (config, cb) {
         : semver.inc(results.lastRelease.version, results.type)
     }
 
-    plugins.verifyRelease(_.assign({
+    plugins.verifyRelease(Object.assign({
       commits: results.commits,
       lastRelease: results.lastRelease,
       nextRelease: nextRelease

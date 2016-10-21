@@ -74,7 +74,7 @@ npmconf.load({}, function (err, conf) {
   var hide = {}
   if (options.githubToken) hide.githubToken = '***'
 
-  log.verbose('init', 'options:', _.assign({}, options, hide))
+  log.verbose('init', 'options:', Object.assign({}, options, hide))
   log.verbose('init', 'Verifying config.')
 
   var errors = require('../src/lib/verify')(config)
@@ -136,7 +136,7 @@ npmconf.load({}, function (err, conf) {
             log.silly('pre', 'Couldn\'t find npm-shrinkwrap.json.')
           }
 
-          fs.writeFileSync('./package.json', JSON.stringify(_.assign(originalPkg, {
+          fs.writeFileSync('./package.json', JSON.stringify(Object.assign(originalPkg, {
             version: release.version
           }), null, 2))
 

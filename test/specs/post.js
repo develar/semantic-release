@@ -1,4 +1,3 @@
-var defaults = require('lodash').defaults
 var test = require('tap').test
 var proxyquire = require('proxyquire')
 
@@ -36,7 +35,7 @@ test('full post run', function (t) {
     }, function (err, published, release) {
       tt.error(err)
       tt.is(published, false)
-      tt.match(release, defaults({draft: true}, defaultRelease))
+      tt.match(release, Object.assign({}, defaultRelease, {draft: true}))
 
       tt.end()
     })
@@ -50,7 +49,7 @@ test('full post run', function (t) {
     }, function (err, published, release) {
       tt.error(err)
       tt.is(published, true)
-      tt.match(release, defaults({draft: true}, defaultRelease))
+      tt.match(release, Object.assign({}, defaultRelease, {draft: true}))
 
       tt.end()
     })
