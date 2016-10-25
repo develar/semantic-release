@@ -10,7 +10,7 @@ module.exports = function (config, cb) {
   auto({
     lastRelease: plugins.getLastRelease.bind(null, config),
     commits: ['lastRelease', function (results, cb) {
-      getCommits(_.assign({
+      getCommits(Object.assign({
         lastRelease: results.lastRelease
       }, config),
       cb)
