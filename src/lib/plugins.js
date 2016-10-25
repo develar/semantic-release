@@ -1,38 +1,32 @@
-var relative = require('require-relative')
-var series = require('run-series')
+const relative = require('require-relative');
+const series = require('run-series');
 
-var exports = module.exports = function (options) {
-  var plugins = {
+exports = module.exports = function (options) {
+  const plugins = {
     analyzeCommits: exports.normalize(options.analyzeCommits, '@semantic-release/commit-analyzer'),
-    generateNotes: exports.normalize(options.generateNotes, '@semantic-release/release-notes-generator'),
     getLastRelease: exports.normalize(options.getLastRelease, '@semantic-release/last-release-npm')
   }
 
-  ;['verifyConditions', 'verifyRelease'].forEach(function (plugin) {
+  for (let plugin of ['verifyConditions', 'verifyRelease']) {
     if (!Array.isArray(options[plugin])) {
       plugins[plugin] = exports.normalize(
         options[plugin],
-        plugin === 'verifyConditions'
-          ? '@semantic-release/condition-travis'
-          : './plugin-noop'
+        plugin === 'verifyConditions' ? '@semantic-release/condition-travis' : './plugin-noop'
       )
-      return
+      continue
     }
 
     plugins[plugin] = function (pluginOptions, cb) {
-      var tasks = options[plugin].map(function (step) {
-        return exports.normalize(step, './plugin-noop').bind(null, pluginOptions)
-      })
-
-      series(tasks, cb)
+      series(options[plugin].map(step => exports.normalize(step, './plugin-noop').bind(null, pluginOptions)), cb)
     }
-  })
-
+  }
   return plugins
 }
 
 exports.normalize = function (pluginConfig, fallback) {
-  if (typeof pluginConfig === 'string') return relative(pluginConfig).bind(null, {})
+  if (typeof pluginConfig === 'string') {
+    return relative(pluginConfig).bind(null, {})
+  }
 
   if (pluginConfig && (typeof pluginConfig.path === 'string')) {
     return relative(pluginConfig.path).bind(null, pluginConfig)
