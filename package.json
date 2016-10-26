@@ -1,7 +1,7 @@
 {
   "name": "@develar/semantic-release",
   "description": "automated semver compliant package publishing",
-  "version": "6.3.10",
+  "version": "6.3.12",
   "author": "Stephan Bönnemann <stephan@boennemann.me> (http://boennemann.me)",
   "bin": {
     "semantic-release": "bin/semantic-release.js"
@@ -20,6 +20,7 @@
     "conventional-changelog": "^1.1.0",
     "git-head": "^1.14.0",
     "github": "^5.3.3",
+    "ini": "^1.3.4",
     "lodash": "^4.16.4",
     "nerf-dart": "^1.0.0",
     "nopt": "^3.0.6",

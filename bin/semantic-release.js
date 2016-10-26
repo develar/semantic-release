@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const ini = require('ini')
 const path = require('path')
 const url = require('url')
 
@@ -47,10 +48,10 @@ const npm = {
   auth: {
     token: env.NPM_TOKEN
   },
-  cafile: conf.get('cafile'),
-  loglevel: conf.get('loglevel'),
+  cafile: conf['cafile'],
+  loglevel: conf['loglevel'],
   registry: require('../src/lib/get-registry')(pkg, conf),
-  tag: (pkg.publishConfig || {}).tag || conf.get('tag') || 'latest'
+  tag: (pkg.publishConfig || {}).tag || conf['tag'] || 'latest'
 }
 
 // normalize trailing slash
@@ -91,18 +92,12 @@ if (options.argv.remain[0] === 'pre') {
     const nerfDart = require('nerf-dart')(npm.registry)
     let wroteNpmRc = false
 
-    if (env.NPM_OLD_TOKEN && env.NPM_EMAIL) {
-      // Using the old auth token format is not considered part of the public API
-      // This might go away anytime (i.e. once we have a better testing strategy)
-      conf.set('_auth', '${NPM_OLD_TOKEN}', 'project')
-      conf.set('email', '${NPM_EMAIL}', 'project')
-      wroteNpmRc = true
-    } else if (env.NPM_TOKEN) {
+    if (env.NPM_TOKEN) {
       conf.set(nerfDart + ':_authToken', '${NPM_TOKEN}', 'project')
       wroteNpmRc = true
     }
 
-    conf.save('project', function (error) {
+    fs.writeFile('.npmrc', ini.encode(conf), function (error) {
       if (error) return log.error('pre', 'Failed to save npm config.', error)
 
       if (wroteNpmRc) log.verbose('pre', 'Wrote authToken to .npmrc.')
