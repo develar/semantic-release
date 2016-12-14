@@ -1,7 +1,5 @@
 var exec = require('child_process').exec
 
-var SemanticReleaseError = require('@semantic-release/error')
-
 module.exports = function (config, cb) {
   var lastRelease = config.lastRelease
   var options = config.options
@@ -38,7 +36,7 @@ module.exports = function (config, cb) {
         ? '\nHere is a list of branches that still contain the commit in question: \n * ' + branches.join('\n * ')
         : ''
       ))
-      return cb(new SemanticReleaseError('Commit not in history', 'ENOTINHISTORY'))
+      return cb(new Error('Commit not in history'))
     }
 
     extract()

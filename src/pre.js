@@ -4,7 +4,6 @@ const semver = require('semver')
 const getCommits = require('./lib/commits')
 const getType = require('./lib/type')
 
-const SemanticReleaseError = require('@semantic-release/error')
 const RegClient = require('npm-registry-client')
 
 module.exports = function (config, cb) {
@@ -69,7 +68,7 @@ function lastReleaseNpm(config, cb) {
     }
 
     if (!version) {
-      return cb(new SemanticReleaseError(`There is no release with the dist-tag "${tag}" yet. Tag a version manually or define "fallbackTags".`, 'ENODISTTAG'));
+      return cb(new Error(`There is no release with the dist-tag "${tag}" yet. Tag a version manually or define "fallbackTags".`));
     }
 
     cb(null, {

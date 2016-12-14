@@ -7,11 +7,39 @@ const ini = require('ini')
 const path = require('path')
 const url = require('url')
 const debug = require('debug')('semantic-release')
+const fromUrl = require('hosted-git-info').fromUrl
 
 const env = process.env
-const pkg = JSON.parse(fs.readFileSync('./package.json'))
-require('normalize-package-data')(pkg)
-const options = Object.assign({}, pkg.release, {
+const packageData = fixRepositoryField(JSON.parse(fs.readFileSync('./package.json')))
+
+function fixRepositoryField(data) {
+  if (data.repositories) {
+    data.repository = data.repositories[0]
+  }
+
+  if (!data.repository) {
+    return data
+  }
+
+  if (typeof data.repository === "string") {
+    data.repository = {
+      type: "git",
+      url: data.repository
+    }
+  }
+
+  const r = data.repository.url
+  if (r) {
+    const hosted = fromUrl(r)
+    if (hosted) {
+      data.repository.url = hosted.getDefaultRepresentation() == "shortcut" ? hosted.https() : hosted.toString()
+    }
+  }
+
+  return data
+}
+
+const options = Object.assign({}, packageData.release, {
   branch: env.SR_BRANCH || 'master',
   fallbackTags: {
     next: 'latest'
@@ -22,12 +50,12 @@ const options = Object.assign({}, pkg.release, {
 
 const plugins = require('../src/lib/plugins')(options)
 
-const registry = url.format(url.parse(getRegistry(pkg)))
-const tag = (pkg.publishConfig || {}).tag || 'latest'
+const registry = url.format(url.parse(getRegistry(packageData)))
+const tag = (packageData.publishConfig || {}).tag || 'latest'
 
 const config = {
   env: env,
-  pkg: pkg,
+  pkg: packageData,
   tag: tag,
   registry: registry,
   options: options,
@@ -37,7 +65,7 @@ const config = {
   }
 }
 
-const errors = require('../src/lib/verify')(config)
+const errors = verify(packageData)
 if (errors.length > 0) {
   for (let error of errors) {
     console.error(error)
@@ -67,7 +95,7 @@ promise
   })
 
 function pre() {
-  return fse.writeFile(path.join(require("os").homedir(), '.npmrc'), `${toNerfDart(registry)}:_authToken=\${NPM_TOKEN}\n`)
+  return (process.env.CI ? fse.writeFile(path.join(require("os").homedir(), '.npmrc'), `${toNerfDart(registry)}:_authToken=\${NPM_TOKEN}\n`) : Promise.resolve())
     .then(() => Promise.promisify(require('../src/pre'))(config))
     .then(release => {
       debug(`Determined version ${release.version} as "${tag}"`)
@@ -87,7 +115,7 @@ function pre() {
       }
 
       debug(`Wrote version ${release.version} to package.json.`)
-      return fse.writeFile('./package.json', JSON.stringify(Object.assign(pkg, {
+      return fse.writeFile('./package.json', JSON.stringify(Object.assign(packageData, {
         version: release.version
       }), null, 2))
     })
@@ -103,11 +131,33 @@ function toNerfDart(uri) {
   return url.resolve(url.format(parsed), '.')
 }
 
-function getRegistry(pkg) {
-  if (pkg.publishConfig && pkg.publishConfig.registry) {
-    return pkg.publishConfig.registry
+function getRegistry(packageData) {
+  if (packageData.publishConfig && packageData.publishConfig.registry) {
+    return packageData.publishConfig.registry
   }
   else {
     return 'https://registry.npmjs.org/'
   }
+}
+
+function verify(packageData) {
+  const errors = []
+
+  if (!packageData.name) {
+    errors.push('No "name" found in package.json.')
+  }
+
+  if (!packageData.repository || !packageData.repository.url) {
+    errors.push('No "repository" found in package.json.')
+  }
+
+  if (config.options.debug) {
+    return errors
+  }
+
+  if ((process.env.CI || "").toLowerCase() === "true" && !process.env.NPM_TOKEN) {
+    errors.push('No npm token specified')
+  }
+
+  return errors
 }
