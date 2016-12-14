@@ -2,7 +2,7 @@ const url = require('url')
 
 const gitHead = require('git-head')
 const GitHubApi = require('github')
-const parseSlug = require('parse-github-repo-url')
+const fromUrl = require('hosted-git-info').fromUrl
 const through = require('through2');
 
 module.exports = function (config, cb) {
@@ -33,16 +33,16 @@ module.exports = function (config, cb) {
       gitHead(function (err, hash) {
         if (err) return cb(err)
 
-        const ghRepo = parseSlug(pkg.repository.url)
+        const ghRepo = fromUrl(pkg.repository.url)
         const release = {
-          user: ghRepo[0],
-          repo: ghRepo[1],
-          name: 'v' + pkg.version,
-          tag_name: 'v' + pkg.version,
+          owner: ghRepo.user,
+          repo: ghRepo.project,
+          name: pkg.version,
+          tag_name: `v${pkg.version}`,
           target_commitish: hash,
-          draft: !!options.debug,
-          body: log,
-          prerelease: (pkg.publishConfig || {}).tag === "next"
+          draft: options.debug,
+          body: body,
+          prerelease: process.env.GH_RELEASE_PRERELEASE === "true" || (pkg.publishConfig || {}).tag === "next"
         }
 
         if (options.debug && !options.githubToken) {

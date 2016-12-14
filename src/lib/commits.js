@@ -1,7 +1,5 @@
 var exec = require('child_process').exec
 
-var log = require('npmlog')
-
 var SemanticReleaseError = require('@semantic-release/error')
 
 module.exports = function (config, cb) {
@@ -32,7 +30,7 @@ module.exports = function (config, cb) {
     }
 
     if (!inHistory) {
-      log.error('commits',
+      console.error('commits',
         'The commit the last release of this package was derived from is not in the direct history of the "' + branch + '" branch.\n' +
         'This means semantic-release can not extract the commits between now and then.\n' +
         'This is usually caused by force pushing, releasing from an unrelated branch, or using an already existing package name.\n' +

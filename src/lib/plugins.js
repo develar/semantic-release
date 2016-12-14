@@ -4,15 +4,12 @@ const series = require('run-series');
 exports = module.exports = function (options) {
   const plugins = {
     analyzeCommits: exports.normalize(options.analyzeCommits, '@semantic-release/commit-analyzer'),
-    getLastRelease: exports.normalize(options.getLastRelease, '@semantic-release/last-release-npm')
+    getLastRelease: exports.normalize(options.getLastRelease, null)
   }
 
-  for (let plugin of ['verifyConditions', 'verifyRelease']) {
+  for (let plugin of ['verifyRelease']) {
     if (!Array.isArray(options[plugin])) {
-      plugins[plugin] = exports.normalize(
-        options[plugin],
-        plugin === 'verifyConditions' ? '@semantic-release/condition-travis' : './plugin-noop'
-      )
+      plugins[plugin] = exports.normalize(options[plugin], './plugin-noop')
       continue
     }
 
@@ -32,5 +29,5 @@ exports.normalize = function (pluginConfig, fallback) {
     return relative(pluginConfig.path).bind(null, pluginConfig)
   }
 
-  return require(fallback).bind(null, pluginConfig)
+  return fallback == null ? null : require(fallback).bind(null, pluginConfig)
 }

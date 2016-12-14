@@ -1,8 +1,27 @@
-var SemanticReleaseError = require('@semantic-release/error')
+const SemanticReleaseError = require('@semantic-release/error')
 
 module.exports = function (config, cb) {
-  var plugins = config.plugins
-  var lastRelease = config.lastRelease
+  const plugins = config.plugins
+  const lastRelease = config.lastRelease
+
+  // if (plugins.analyzeCommits == null) {
+  //   const conventionalCommitsParser = require('conventional-commits-parser')
+  //   for (let commit of config.commits) {
+  //     let angularPreset = {
+  //       headerPattern: /^(\w*)(?:\((.*)\))?\: (.*)$/,
+  //       headerCorrespondence: [
+  //         'type',
+  //         'scope',
+  //         'subject'
+  //       ],
+  //       noteKeywords: 'BREAKING CHANGE',
+  //       revertPattern: /^revert:\s([\s\S]*?)\s*This reverts commit (\w*)\./,
+  //       revertCorrespondence: ['header', 'hash']
+  //     };
+  //     const data = conventionalCommitsParser.sync(commit.message, angularPreset)
+  //   }
+  //   return
+  // }
 
   plugins.analyzeCommits(config, function (err, type) {
     if (err) return cb(err)

@@ -1,39 +1,21 @@
-var SemanticReleaseError = require('@semantic-release/error')
-
 module.exports = function (config) {
-  var pkg = config.pkg
-  var options = config.options
-  var env = config.env
-  var errors = []
+  const pkg = config.pkg
+  const errors = []
 
   if (!pkg.name) {
-    errors.push(new SemanticReleaseError(
-      'No "name" found in package.json.',
-      'ENOPKGNAME'
-    ))
+    errors.push('No "name" found in package.json.')
   }
 
   if (!pkg.repository || !pkg.repository.url) {
-    errors.push(new SemanticReleaseError(
-      'No "repository" found in package.json.',
-      'ENOPKGREPO'
-    ))
+    errors.push('No "repository" found in package.json.')
   }
 
-  if (options.debug) return errors
-
-  if (!options.githubToken) {
-    errors.push(new SemanticReleaseError(
-      'No github token specified.',
-      'ENOGHTOKEN'
-    ))
+  if (config.options.debug) {
+    return errors
   }
 
-  if (!(env.NPM_TOKEN || (env.NPM_OLD_TOKEN && env.NPM_EMAIL))) {
-    errors.push(new SemanticReleaseError(
-      'No npm token specified.',
-      'ENONPMTOKEN'
-    ))
+  if ((process.env.CI || "").toLowerCase() === "true" && !config.env.NPM_TOKEN) {
+    errors.push('No npm token specified')
   }
 
   return errors
